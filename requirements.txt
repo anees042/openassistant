@@ -1,2 +1,2 @@
 #required
-pocketsphinx
+pocketsphinx>=0.1.3
