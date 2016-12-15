@@ -133,19 +133,48 @@ def process_command(self, command):
 def main():
     model_path = get_model_path()
     #print (model_path)
-    speech = LiveSpeech(
+
+    # Parse command-line options,
+    #  use `Config` to load mind configuration
+    #  command-line overrides config file
+    args = _parser(sys.argv[1:])
+    logger.debug("Arguments: {args}".format(args=args))
+
+
+    conf = Config(path=args.mind_dir, **vars(args))
+
+
+    #
+    # Further patching to ease transition..
+    #
+
+    # Configure Language
+    logger.debug("Configuring Module: Language")
+    conf.strings_file = os.path.join(conf.cache_dir, "sentences.corpus")
+    conf.dic_file = os.path.join(conf.cache_dir, 'dic')
+    conf.lang_file = os.path.join(conf.cache_dir, 'lm')
+    conf.fsg_file = None #os.path.join(conf.cache_dir, 'fsg')
+    # sphinx_jsgf2fsg < conf.jsgf_file > conf.fsg_file
+    l = LanguageUpdater(conf)
+    l.update_language()
+
+    recognizer = LiveSpeech(
         verbose=False,
         sampling_rate=16000,
         buffer_size=2048,
         no_search=False,
         full_utt=False,
         hmm=os.path.join(model_path, 'en-us'),
-        lm=os.path.join(model_path, 'en-us.lm.bin'),
-        dic=os.path.join(model_path, 'cmudict-en-us.dict')
+        lm=conf.lang_file,
+        dic=cnf.dic_file
     )
 
-    for phrase in speech:
-        print(phrase)
+    # A configured Assistant
+    a = Assistant(config=conf)
+
+    for phrase in recognizer:
+        #print(phrase.hypothesis())
+        recognizer_finished(a, recognizer, phrase.hypothesis())
 
 if __name__ == '__main__':
     try:
