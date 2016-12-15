@@ -166,7 +166,7 @@ def main():
         full_utt=False,
         hmm=os.path.join(model_path, 'en-us'),
         lm=conf.lang_file,
-        dic=cnf.dic_file
+        dic=conf.dic_file
     )
 
     # A configured Assistant
