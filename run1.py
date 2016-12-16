@@ -109,23 +109,27 @@ def log_history(a, text):
 def run_command(a, cmd):
     """PRINT COMMAND AND RUN"""
     print("\x1b[32m< ! >\x1b[0m", cmd)
-    recognizer.pause()
+    #recognizer.pause()
     subprocess.call(cmd, shell=True)
-    recognizer.listen()
+    #recognizer.listen()
 
 
 def process_command(self, command):
     print(command)
     if command == "listen":
-        self.recognizer.listen()
+        #self.recognizer.listen()
+        pass
     elif command == "stop":
-        self.recognizer.pause()
+        #self.recognizer.pause()
+        pass
     elif command == "continuous_listen":
-        self.continuous_listen = True
-        self.recognizer.listen()
+        #self.continuous_listen = True
+        #self.recognizer.listen()
+        pass
     elif command == "continuous_stop":
-        self.continuous_listen = False
-        self.recognizer.pause()
+        #self.continuous_listen = False
+        #self.recognizer.pause()
+        pass
     elif command == "quit":
         self.quit()
 
