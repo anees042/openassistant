@@ -20,10 +20,13 @@ Linux (tested ubuntu16.04):
 * sudo apt-get install libpulse-dev swig
 
 * pip install pocketsphinx
+OR
+* pip install -r requirements.txt
 
 Windows (tested anaconda, python3.5):
 * pip install pocketsphinx
-
+OR
+* pip install -r requirements.txt
 
 Useful Tools
 ------------
