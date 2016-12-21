@@ -15,13 +15,14 @@ done by `Jonathan Kulp <http://jonathankulp.org/>`__.
 Dependencies
 ------------
 
-* `Arch Linux <https://www.archlinux.org/>`_ or `Ubuntu Linux <http://openassistant.org/forum/support/ubuntu-16-04-installation/>`_ (Testing Soon on `macOS <https://www.apple.com/macos>`_)
-* `Python 3.5 <https://www.python.org/downloads>`__
-* `PocketSphinx 5PreAlpha <https://github.com/cmusphinx/pocketsphinx>`__
-* `GStreamer-1.0 <https://github.com/GStreamer/gstreamer>`__
-* `GStreamer-1.0 Base Plugins <https://github.com/GStreamer/gst-plugins-base>`__
-* `Python-GObject <https://wiki.gnome.org/action/show/Projects/PyGObject>`__
-* `Python-Requests <https://pypi.python.org/pypi/requests>`__
+Linux (tested ubuntu16.04):
+
+* sudo apt-get install libpulse-dev swig
+
+* pip install pocketsphinx
+
+Windows (tested anaconda, python3.5):
+* pip install pocketsphinx
 
 
 Useful Tools

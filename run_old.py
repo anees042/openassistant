@@ -1,18 +1,26 @@
+# OpenAssistant 0.04
+# 2016 General Public License V3
+# By Andrew Vavrek, Clayton G. Hobbs, Jezra
+
 import logging
 logging.basicConfig(level=logging.CRITICAL)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)    
+
 
 from argparse import ArgumentParser, Namespace
-
 import os
 import signal
 import sys
 import subprocess
-from pocketsphinx import LiveSpeech, get_model_path
+
+
+from gi.repository import GObject
 
 from core import Config, Assistant
 
 from modules.language import LanguageUpdater
+from modules.speech_recognition.gst import Recognizer
+#from core.numbers import NumberParser
 
 def _parser(args):
     parser = ArgumentParser()
@@ -41,7 +49,7 @@ def _parser(args):
     parser.add_argument("--invalid-sentence-command", type=str,
             dest="invalid_sentence_command", action='store',
             help="Command to run when an invalid sentence is detected")
-
+            
     parser.add_argument("-M", "--mind", type=str,
             dest="mind_dir", action='store',
             help="Path to mind to use for assistant")
@@ -91,7 +99,7 @@ def recognizer_finished(a, recognizer, text):
             subprocess.call(a.config.options['invalid_sentence_command'],
                             shell=True)
         print("\x1b[31m< ? >\x1b[0m {0}".format(t))
-
+        
 
 def log_history(a, text):
     if a.config.options['history']:
@@ -104,40 +112,36 @@ def log_history(a, text):
         with open(a.config.history_file, 'w') as hfile:
             for line in a.history:
                 hfile.write(line + '\n')
-
+                
 
 def run_command(a, cmd):
     """PRINT COMMAND AND RUN"""
     print("\x1b[32m< ! >\x1b[0m", cmd)
-    #recognizer.pause()
+    recognizer.pause()
     subprocess.call(cmd, shell=True)
-    #recognizer.listen()
+    recognizer.listen()
 
-
+    
 def process_command(self, command):
     print(command)
     if command == "listen":
-        #self.recognizer.listen()
-        pass
+        self.recognizer.listen()
     elif command == "stop":
-        #self.recognizer.pause()
-        pass
+        self.recognizer.pause()
     elif command == "continuous_listen":
-        #self.continuous_listen = True
-        #self.recognizer.listen()
-        pass
+        self.continuous_listen = True
+        self.recognizer.listen()
     elif command == "continuous_stop":
-        #self.continuous_listen = False
-        #self.recognizer.pause()
-        pass
+        self.continuous_listen = False
+        self.recognizer.pause()
     elif command == "quit":
         self.quit()
 
 
-def main():
-    model_path = get_model_path()
-    #print (model_path)
 
+
+if __name__ == '__main__':
+    
     # Parse command-line options,
     #  use `Config` to load mind configuration
     #  command-line overrides config file
@@ -146,12 +150,12 @@ def main():
 
 
     conf = Config(path=args.mind_dir, **vars(args))
-
-
+    
+    
     #
     # Further patching to ease transition..
     #
-
+    
     # Configure Language
     logger.debug("Configuring Module: Language")
     conf.strings_file = os.path.join(conf.cache_dir, "sentences.corpus")
@@ -161,28 +165,50 @@ def main():
     # sphinx_jsgf2fsg < conf.jsgf_file > conf.fsg_file
     l = LanguageUpdater(conf)
     l.update_language()
+    
+    # Configure Recognizer
+    logger.debug("Configuring Module: Speech Recognition")
+    recognizer = Recognizer(conf)
 
-    recognizer = LiveSpeech(
-        verbose=False,
-        sampling_rate=16000,
-        buffer_size=2048,
-        no_search=False,
-        full_utt=False,
-        hmm=os.path.join(model_path, 'en-us'),
-        lm=conf.lang_file,
-        dic=conf.dic_file
-    )
+    #
+    # End patching
+    #
+    
 
     # A configured Assistant
     a = Assistant(config=conf)
+    
+    recognizer.connect('finished', lambda rec, txt, agent=a: recognizer_finished(agent, rec, txt))
+        
+    
+    #
+    # Questionable dependencies
+    #
+    # Initialize Gobject Threads
+    GObject.threads_init()
 
-    for phrase in recognizer:
-        #print(phrase.hypothesis())
-        recognizer_finished(a, recognizer, phrase.hypothesis())
+    # Create Main Loop
+    main_loop = GObject.MainLoop()
 
-if __name__ == '__main__':
+    # Handle Signal Interrupts
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    #
+    # End Questionable dependencies
+    #
+
+    # Run Assistant
+    #  maybe use threading module?
+    #  could supplant GObject features
+    #a.run()
+    recognizer.listen()
+    
+
+    # Start Main Loop
     try:
-        main()
-    except KeyboardInterrupt:
-        print('Killed by user')
-        sys.exit(0)
+        main_loop.run()
+
+    except Exception as e:
+        print(e)
+        main_loop.quit()
+        sys.exit()
+        
