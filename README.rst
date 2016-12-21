@@ -28,7 +28,7 @@ Windows (tested anaconda, python3.5):
 Useful Tools
 ------------
 
-* aplay - console audio player (on Windows use ffplay from ffmpeg with switch -nodisp -autoexit for console player)
+* aplay - console audio player (on Windows use ffplay from ffmpeg with switch -nodisp -autoexit for console player - https://ffmpeg.org/ffplay.html)
 * plaympeg - console mp3 player
 * projectm - visualizations responsive to sound
 * wmctrl - window manager control. opening, closing, resize, switch windows. 
